@@ -1,10 +1,9 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Calendar, Bell, UserPlus } from 'lucide-react';
+import { Folder, LayoutGrid, Calendar, Bell, UserRound} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -13,17 +12,18 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    
+    {
+        title: 'Tasks',
+        href: '/assignee',
+        icon: Folder,
+    },
 
+ 
     {
         title: 'Members',
         href: '/members',
-        icon: Users,
-    },
-
-    {
-        title: 'Calendar',
-        href: '/calendar',
-        icon: Calendar,
+        icon: UserRound,
     },
 
     {
@@ -32,11 +32,6 @@ const mainNavItems: NavItem[] = [
         icon: Bell,
     },
 
-    {
-        title: 'Assignee',
-        href: '/assignee',
-        icon: UserPlus,
-    },
 
 ];
 
@@ -44,7 +39,7 @@ const mainNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -62,7 +57,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-               
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
