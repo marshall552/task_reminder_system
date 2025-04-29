@@ -1,55 +1,32 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Calendar, Bell, UserPlus } from 'lucide-react';
+import { BellDot, List } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
+        title: 'Task',
+        href: '/Task',
+        icon: List,
     },
-
-    {
-        title: 'Members',
-        href: '/members',
-        icon: Users,
-    },
-
-    {
-        title: 'Calendar',
-        href: '/calendar',
-        icon: Calendar,
-    },
-
     {
         title: 'Notifications',
-        href: '/notifications',
-        icon: Bell,
+        href: '/Notifications',
+        icon: BellDot,
     },
-
-    {
-        title: 'Assignee',
-        href: '/assignee',
-        icon: UserPlus,
-    },
-
 ];
-
-
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="sidebar" className="bg-[#F4F5FF]">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href="/Task" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -62,7 +39,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-               
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
