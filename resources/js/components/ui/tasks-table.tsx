@@ -42,7 +42,7 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="divide-y divide-border rounded-lg overflow-hidden shadow-sm">
+      <div className="divide-y divide-border rounded-lg overflow-hidden shadow-sm mb-3">
         {/* Header Row */}
         <div className="flex px-4 py-3 font-medium text-sm uppercase text-foreground bg-chart-2/20 min-h-[48px] w-full">
           <div className="flex-1 pl-4 min-w-[200px] flex items-center">Task</div>
