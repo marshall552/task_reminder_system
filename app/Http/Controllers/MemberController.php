@@ -216,6 +216,7 @@ class MemberController extends Controller
         return Inertia::render('members', [
             'members' => $members,
             'search' => $search,
+            'isAdmin' => $request->user()->role === 'admin',
         ]);
     }
 

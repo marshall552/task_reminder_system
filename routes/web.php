@@ -25,8 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('calendar');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
-Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
-Route::post('notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+    Route::post('notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     Route::get('assignee', [TaskController::class, 'index'])->name('assignee.index');
     Route::post('assignee', [TaskController::class, 'store'])->name('assignee.store');

@@ -216,18 +216,26 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        // Unchanged
         $perPage = $request->input('per_page', 9);
         $search = $request->query('search');
         $status = $request->query('status');
+        $currentUser = Auth::user();
+        $isAdmin = $currentUser->role === 'admin';
 
+        // Update overdue tasks in bulk
         Task::whereNotNull('due_date_time')
             ->where('due_date_time', '<', now())
             ->where('status', '!=', 'done')
             ->update(['status' => 'overdue']);
 
-        $tasksQuery = Task::query()
-            ->when($search, function ($query, $search) {
+        $tasksQuery = Task::query();
+
+        // For non-admin users, only show tasks assigned to them
+        if (!$isAdmin) {
+            $tasksQuery->where('assignee_id', $currentUser->id);
+        }
+
+        $tasksQuery->when($search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%");
             })
@@ -247,7 +255,7 @@ class TaskController extends Controller
         return Inertia::render('assignee', [
             'tasks' => $tasks,
             'users' => $users,
-            'isAdmin' => Auth::user()->role === 'admin', // Updated to dynamically check the current user's role
+            'isAdmin' => $isAdmin,
             'search' => $search,
             'status' => $status,
         ]);
