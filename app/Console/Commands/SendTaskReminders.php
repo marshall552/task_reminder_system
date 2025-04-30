@@ -154,7 +154,7 @@ class SendTaskReminders extends Command
                     Notification::create([
                         'user_id' => null,
                         'recipient_id' => $admin->id,
-                        'message' => "system: Task '{$task->title}' assigned to {$assignee->name} is overdue since {$task->due_date_time->format('Y-m-d H:i')}.",
+                        'message' => "Task: '{$task->title}' assigned to {$assignee->name} is overdue since {$task->due_date_time->format('Y-m-d H:i')}.",
                         'is_read' => false,
                     ]);
                 }

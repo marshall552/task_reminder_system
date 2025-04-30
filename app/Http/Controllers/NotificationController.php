@@ -32,7 +32,7 @@ class NotificationController extends Controller
         if ($isAdmin) {
             $query->orWhere(function ($q) {
                 $q->whereNull('recipient_id')
-                  ->where('message', 'like', '%system:%');
+                  ->where('message', 'like', '%system%');
             });
         }
     });
@@ -44,7 +44,7 @@ class NotificationController extends Controller
         if ($isAdmin) {
             $query->orWhere(function ($q) {
                 $q->whereNull('recipient_id')
-                  ->where('message', 'like', '%system:%');
+                  ->where('message', 'like', '%system%');
             });
         }
     });
@@ -57,7 +57,7 @@ class NotificationController extends Controller
         if ($isAdmin) {
             $query->orWhere(function ($q) {
                 $q->whereNull('recipient_id')
-                  ->where('message', 'like', '%system:%');
+                  ->where('message', 'like', '%system%');
             });
         }
     });
@@ -84,8 +84,8 @@ class NotificationController extends Controller
                     'updated_at' => $notification->user->updated_at->toIso8601String(),
                 ] : [
                     'id' => 0,
-                    'name' => 'System',
-                    'email' => 'system@example.com',
+                    'name' => 'Tasko',
+                    'email' => 'tasko@example.com',
                     'avatar' => null,
                     'email_verified_at' => null,
                     'created_at' => now()->toIso8601String(),
@@ -117,7 +117,7 @@ class NotificationController extends Controller
 
         if ($user->role === 'admin') {
             Notification::whereNull('recipient_id')
-                ->where('message', 'like', '%system:%')
+                ->where('message', 'like', '%system%')
                 ->where('is_read', false)
                 ->update(['is_read' => true]);
         }

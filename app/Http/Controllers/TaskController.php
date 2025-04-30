@@ -296,7 +296,7 @@ class TaskController extends Controller
             Notification::create([
                 'user_id' => auth()->id(),
                 'recipient_id' => $admin->id,
-                'message' => "system: New task '{$task->title}' assigned to " . User::find($task->assignee_id)->name . ".",
+                'message' => "New task '{$task->title}' assigned to " . User::find($task->assignee_id)->name . ".",
                 'is_read' => false,
             ]);
         }
