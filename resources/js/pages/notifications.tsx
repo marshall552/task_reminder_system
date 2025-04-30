@@ -216,14 +216,14 @@ export default function Notifications({ notifications: initialNotifications, tot
 
                 {/* Notification List */}
                 <div className="flex-1">
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div className="divide-y divide-gray-200">
                         {notifications.length > 0 ? (
                             notifications.map((notification, index) => (
                                 <Dialog key={notification.id}>
                                     <DialogTrigger asChild>
                                         <div
-                                            className={`flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                                                index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                            className={`flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-gray-200  ${
+                                                index % 2 === 0 ? 'bg-white' : 'bg-chart-2/10'
                                             }`}
                                             onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                                         >

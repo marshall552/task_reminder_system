@@ -200,6 +200,7 @@
 //     }
 // }
 
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -246,7 +247,7 @@ class TaskController extends Controller
         return Inertia::render('assignee', [
             'tasks' => $tasks,
             'users' => $users,
-            'isAdmin' => true,
+            'isAdmin' => Auth::user()->role === 'admin', // Updated to dynamically check the current user's role
             'search' => $search,
             'status' => $status,
         ]);
@@ -279,26 +280,36 @@ class TaskController extends Controller
             'due_date_time' => $validated['due_date_time'],
             'started_date' => $validated['started_date'],
             'status' => $validated['status'],
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
         ]);
 
-        // Notify assignee
-        Notification::create([
-            'user_id' => auth()->id(),
-            'recipient_id' => $task->assignee_id,
-            'message' => "New task assigned: '{$task->title}' due on {$task->due_date_time->format('Y-m-d H:i')}.",
-            'is_read' => false,
-        ]);
+        $currentUser = Auth::user();
+        $isAdmin = $currentUser->role === 'admin';
 
-        // Notify admins
-        $admins = User::where('role', 'admin')->get();
-        foreach ($admins as $admin) {
+        // Notify assignee (if not the current user)
+        if ($task->assignee_id != $currentUser->id) {
             Notification::create([
-                'user_id' => auth()->id(),
-                'recipient_id' => $admin->id,
-                'message' => "New task '{$task->title}' assigned to " . User::find($task->assignee_id)->name . ".",
+                'user_id' => $isAdmin ? null : $currentUser->id, // Null for admin to show as "Tasko"
+                'recipient_id' => $task->assignee_id,
+                'message' => "New task assigned: '{$task->title}' due on {$task->due_date_time->format('Y-m-d H:i')}.",
                 'is_read' => false,
             ]);
+        }
+
+        // Notify admins (only if the current user is not an admin)
+        if (!$isAdmin) {
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                // Ensure the admin is not the current user (redundant but safe)
+                if ($admin->id !== $currentUser->id) {
+                    Notification::create([
+                        'user_id' => $currentUser->id,
+                        'recipient_id' => $admin->id,
+                        'message' => "New task '{$task->title}' assigned to " . User::find($task->assignee_id)->name . ".",
+                        'is_read' => false,
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('assignee.index')->with('success', 'Task created successfully!');
@@ -340,10 +351,13 @@ class TaskController extends Controller
             'status' => $validated['status'],
         ]);
 
-        // Notify assignee if reassigned (optional, remove if not needed)
-        if ($task->wasChanged('assignee_id')) {
+        $currentUser = Auth::user();
+        $isAdmin = $currentUser->role === 'admin';
+
+        // Notify assignee if reassigned (only if not the current user)
+        if ($task->wasChanged('assignee_id') && $task->assignee_id != $currentUser->id) {
             Notification::create([
-                'user_id' => auth()->id(),
+                'user_id' => $isAdmin ? null : $currentUser->id, // Null for admin to show as "Tasko"
                 'recipient_id' => $task->assignee_id,
                 'message' => "Task reassigned to you: '{$task->title}' due on {$task->due_date_time->format('Y-m-d H:i')}.",
                 'is_read' => false,
@@ -352,22 +366,30 @@ class TaskController extends Controller
 
         // Notify if status changed
         if ($task->wasChanged('status')) {
-            Notification::create([
-                'user_id' => auth()->id(),
-                'recipient_id' => $task->assignee_id,
-                'message' => "Task '{$task->title}' status updated to {$task->status}.",
-                'is_read' => false,
-            ]);
-
-            // Notify admins
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
+            // Notify assignee (if not the current user)
+            if ($task->assignee_id != $currentUser->id) {
                 Notification::create([
-                    'user_id' => auth()->id(),
-                    'recipient_id' => $admin->id,
-                    'message' => "system: Task '{$task->title}' status updated to {$task->status} for " . User::find($task->assignee_id)->name . ".",
+                    'user_id' => $isAdmin ? null : $currentUser->id, // Null for admin to show as "Tasko"
+                    'recipient_id' => $task->assignee_id,
+                    'message' => "Task '{$task->title}' status updated to {$task->status}.",
                     'is_read' => false,
                 ]);
+            }
+
+            // Notify admins (only if the current user is not an admin)
+            if (!$isAdmin) {
+                $admins = User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    // Ensure the admin is not the current user (redundant but safe)
+                    if ($admin->id !== $currentUser->id) {
+                        Notification::create([
+                            'user_id' => $currentUser->id,
+                            'recipient_id' => $admin->id,
+                            'message' => "Tasko: Task '{$task->title}' status updated to {$task->status} for " . User::find($task->assignee_id)->name . ".",
+                            'is_read' => false,
+                        ]);
+                    }
+                }
             }
         }
 

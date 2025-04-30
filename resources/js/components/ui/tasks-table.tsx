@@ -48,7 +48,19 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
           <div className="flex-1 pl-4 min-w-[200px] flex items-center">Task</div>
           <div className="flex-1 pl-10 min-w-[180px] flex items-center leading-none">Started Date</div>
           <div className="flex-1 pl-8 pr-2 min-w-[180px] flex items-center leading-none">Due Date</div>
-          <div className="flex-1 pl-5 pr-6 min-w-[120px] flex items-center leading-none">Assignee</div>
+          <div className="flex-1 pl-5 pr-6 min-w-[120px] flex items-center leading-none">
+            <div
+              className="truncate max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap"
+              style={{
+                maxWidth: '120px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Assignee
+            </div>
+          </div>
           <div className="flex-1 pl-4 pr-4 min-w-[120px] flex items-center">Task Status</div>
           <div className="w-28 min-w-[112px] pl-6 pr-4 flex items-center leading-none">Actions</div>
         </div>
@@ -61,7 +73,7 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
           tasks.map((task, index) => (
             <div
               key={task.id}
-              className={`flex px-4 py-3  min-h-[48px] w-full ${
+              className={`flex px-4 py-3 min-h-[48px] w-full ${
                 index % 2 === 0 ? 'bg-white' : 'bg-gray-100'
               }`}
             >
@@ -86,7 +98,18 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
                 {formatDateTime(task.due_date_time)}
               </div>
               <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[120px] flex items-center">
-                {task.assignee !== 'Unknown' ? task.assignee : `User ${task.assignee_id}` || 'None'}
+                <div
+                  className="truncate max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap"
+                  style={{
+                    maxWidth: '120px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title={task.assignee !== 'Unknown' ? task.assignee || 'None' : `User ${task.assignee_id}` || 'None'}
+                >
+                  {task.assignee !== 'Unknown' ? task.assignee || 'None' : `User ${task.assignee_id}` || 'None'}
+                </div>
               </div>
               <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[120px] flex items-center">
                 <span
