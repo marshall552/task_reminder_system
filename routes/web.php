@@ -40,7 +40,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('user.dashboard');
     Route::get('/user/notification', function () {
         return Inertia::render('User/UserNotification');
-    })->name('user.notifications');
+    })->name('user.tasks');
+    Route::get('/user/tasks', function () {
+        return Inertia::render('User/UserTask');
+    })->name('user.tasks');
 });
 
 require __DIR__.'/settings.php';

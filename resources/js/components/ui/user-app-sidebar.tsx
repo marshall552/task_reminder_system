@@ -13,12 +13,18 @@ const mainNavItems: NavItem[] = [
         href: '/user/dashboard',
         icon: LayoutGrid,
     },
-
+{
+        title: 'Tasks',
+        href: '/user/tasks',
+        icon: Bell,
+    },
     {
         title: 'Notifications',
         href: '/user/notification',
         icon: Bell,
     },
+
+
 
 
 ];
