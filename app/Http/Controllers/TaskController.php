@@ -216,11 +216,11 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
+        // Unchanged
         $perPage = $request->input('per_page', 9);
         $search = $request->query('search');
         $status = $request->query('status');
 
-        // Update overdue tasks in bulk
         Task::whereNotNull('due_date_time')
             ->where('due_date_time', '<', now())
             ->where('status', '!=', 'done')
