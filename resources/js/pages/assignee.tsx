@@ -7,6 +7,7 @@ import { FileUpload } from '@/components/ui/file-upload';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import TasksTable from '@/components/ui/tasks-table';
+import UserTasksTable from '@/components/ui/user-tasks-table';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Toast } from '@/components/ui/toast';
@@ -41,6 +42,7 @@ interface CustomPageProps extends PageProps {
         total: number;
     };
     users: User[];
+    isAdmin: boolean;
     flash?: {
         success?: string;
         error?: string;
@@ -50,14 +52,14 @@ interface CustomPageProps extends PageProps {
 }
 
 export default function Assignee() {
-    const { tasks: initialTasks, users, flash, search: initialSearch, status: initialStatus } = usePage<CustomPageProps>().props;
+    const { tasks: initialTasks, users, isAdmin, flash, search: initialSearch, status: initialStatus } = usePage<CustomPageProps>().props;
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [attachedFile, setAttachedFile] = useState<File | null>(null);
     const [existingFile, setExistingFile] = useState<string | null>(null);
     const [removeFile, setRemoveFile] = useState(false);
-    const [showUploadAnother, setShowUploadAnother] = useState(false); // New state to toggle upload field
+    const [showUploadAnother, setShowUploadAnother] = useState(false);
     const [assigneeId, setAssigneeId] = useState<string>('');
     const [dueDateTime, setDueDateTime] = useState<Dayjs | null>(null);
     const [startedDate, setStartedDate] = useState<Dayjs | null>(null);
@@ -94,8 +96,8 @@ export default function Assignee() {
 
     const handleFileSelect = (file: File | null) => {
         setAttachedFile(file);
-        setRemoveFile(true); // Mark existing file for removal when a new file is selected
-        setShowUploadAnother(false); // Hide the upload field after selecting a file
+        setRemoveFile(true);
+        setShowUploadAnother(false);
     };
 
     const handleDateChange = (date: Date) => {
@@ -350,210 +352,212 @@ export default function Assignee() {
                     {toastMessage && <Toast message={toastMessage.message} variant={toastMessage.variant} onClose={() => setToastMessage(null)} />}
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center p-2 rounded-md">
-                            <div>
-                                <Dialog
-                                    open={isDialogOpen}
-                                    onOpenChange={(open) => {
-                                        setIsDialogOpen(open);
-                                        if (!open) {
-                                            setTitle('');
-                                            setDescription('');
-                                            setAttachedFile(null);
-                                            setExistingFile(null);
-                                            setRemoveFile(false);
-                                            setShowUploadAnother(false);
-                                            setAssigneeId('');
-                                            setDueDateTime(null);
-                                            setStartedDate(null);
-                                            setStatus('pending');
-                                            setEditingTaskId(null);
-                                            setTitleError(undefined);
-                                            setDescriptionError(undefined);
-                                            setAssigneeError(undefined);
-                                            setDueDateTimeError(undefined);
-                                            setStartedDateError(undefined);
-                                            setStatusError(undefined);
-                                        }
-                                    }}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            className="h-10 bg-blue-950 text-sm text-white hover:bg-blue-950/90"
-                                            disabled={!users.length}
-                                        >
-                                            <FilePlusIcon className="h-4 w-4" />
-                                            Create Task
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle>{editingTaskId ? 'Edit Task' : 'Create New Task'}</DialogTitle>
-                                            <DialogDescription>
-                                                {editingTaskId ? 'Modify the details of the existing task.' : 'Fill out the form to create a new task.'}
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
-                                            <div className="flex flex-col gap-4">
-                                                <div>
-                                                    <label htmlFor="title" className="text-foreground text-sm font-medium">
-                                                        Title
-                                                    </label>
-                                                    <Input
-                                                        id="title"
-                                                        placeholder="Organize Weekly Team Meeting"
-                                                        value={title}
-                                                        onChange={(e) => setTitle(e.target.value)}
-                                                        className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
-                                                    />
-                                                    <InputError message={titleError} className="mt-1" />
-                                                </div>
-                                                <div>
-                                                    <label htmlFor="description" className="text-foreground text-sm font-medium">
-                                                        Description
-                                                    </label>
-                                                    <Textarea
-                                                        id="description"
-                                                        placeholder="Schedule and prepare for the weekly team meeting"
-                                                        value={description}
-                                                        onChange={(e) => setDescription(e.target.value)}
-                                                        className="border-border bg-background text-foreground mt-1 box-border min-h-[100px] w-full rounded-md border px-3"
-                                                    />
-                                                    <InputError message={descriptionError} className="mt-1" />
-                                                </div>
-                                                <div>
-                                                    <label htmlFor="assignee" className="text-foreground text-sm font-medium">
-                                                        Assignee
-                                                    </label>
-                                                    <Select value={assigneeId} onValueChange={setAssigneeId}>
-                                                        <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
-                                                            <SelectValue placeholder="Select an assignee" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {users.map((user) => (
-                                                                <SelectItem key={user.id} value={user.id.toString()}>
-                                                                    {user.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <InputError message={assigneeError} className="mt-1" />
-                                                </div>
-                                                <div className="flex flex-col gap-2">
+                            {isAdmin && (
+                                <div>
+                                    <Dialog
+                                        open={isDialogOpen}
+                                        onOpenChange={(open) => {
+                                            setIsDialogOpen(open);
+                                            if (!open) {
+                                                setTitle('');
+                                                setDescription('');
+                                                setAttachedFile(null);
+                                                setExistingFile(null);
+                                                setRemoveFile(false);
+                                                setShowUploadAnother(false);
+                                                setAssigneeId('');
+                                                setDueDateTime(null);
+                                                setStartedDate(null);
+                                                setStatus('pending');
+                                                setEditingTaskId(null);
+                                                setTitleError(undefined);
+                                                setDescriptionError(undefined);
+                                                setAssigneeError(undefined);
+                                                setDueDateTimeError(undefined);
+                                                setStartedDateError(undefined);
+                                                setStatusError(undefined);
+                                            }
+                                        }}
+                                    >
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                className="h-10 bg-blue-950 text-sm text-white hover:bg-blue-950/90"
+                                                disabled={!users.length}
+                                            >
+                                                <FilePlusIcon className="h-4 w-4" />
+                                                Create Task
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>{editingTaskId ? 'Edit Task' : 'Create New Task'}</DialogTitle>
+                                                <DialogDescription>
+                                                    {editingTaskId ? 'Modify the details of the existing task.' : 'Fill out the form to create a new task.'}
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
+                                                <div className="flex flex-col gap-4">
                                                     <div>
-                                                        <label htmlFor="due-date" className="text-foreground text-sm font-medium">
-                                                            Due Date
+                                                        <label htmlFor="title" className="text-foreground text-sm font-medium">
+                                                            Title
                                                         </label>
-                                                        <DatePicker
-                                                            id="due-date"
-                                                            value={dueDateTime?.toDate() || new Date()}
-                                                            onChange={handleDateChange}
+                                                        <Input
+                                                            id="title"
+                                                            placeholder="Organize Weekly Team Meeting"
+                                                            value={title}
+                                                            onChange={(e) => setTitle(e.target.value)}
                                                             className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
-                                                            aria-labelledby="due-date-label"
                                                         />
+                                                        <InputError message={titleError} className="mt-1" />
                                                     </div>
                                                     <div>
-                                                        <label htmlFor="due-time" className="text-foreground text-sm font-medium">
-                                                            Due Time
+                                                        <label htmlFor="description" className="text-foreground text-sm font-medium">
+                                                            Description
                                                         </label>
-                                                        <TimePicker
-                                                            id="due-time"
-                                                            value={dueDateTime?.toDate() || new Date()}
-                                                            onChange={handleTimeChange}
-                                                            className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
-                                                            aria-labelledby="due-date-label"
+                                                        <Textarea
+                                                            id="description"
+                                                            placeholder="Schedule and prepare for the weekly team meeting"
+                                                            value={description}
+                                                            onChange={(e) => setDescription(e.target.value)}
+                                                            className="border-border bg-background text-foreground mt-1 box-border min-h-[100px] w-full rounded-md border px-3"
                                                         />
-                                                    </div>
-                                                    <InputError message={dueDateTimeError} className="mt-1" />
-                                                </div>
-                                                <div className="flex flex-col gap-2">
-                                                    <div>
-                                                        <label htmlFor="started-date" className="text-foreground text-sm font-medium">
-                                                            Started Date
-                                                        </label>
-                                                        <DatePicker
-                                                            id="started-date"
-                                                            value={startedDate?.toDate() || new Date()}
-                                                            onChange={handleStartedDateChange}
-                                                            className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
-                                                            aria-labelledby="started-date-label"
-                                                        />
+                                                        <InputError message={descriptionError} className="mt-1" />
                                                     </div>
                                                     <div>
-                                                        <label htmlFor="started-time" className="text-foreground text-sm font-medium">
-                                                            Started Time
+                                                        <label htmlFor="assignee" className="text-foreground text-sm font-medium">
+                                                            Assignee
                                                         </label>
-                                                        <TimePicker
-                                                            id="started-time"
-                                                            value={startedDate?.toDate() || new Date()}
-                                                            onChange={handleStartedTimeChange}
-                                                            className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
-                                                            aria-labelledby="started-date-label"
-                                                        />
+                                                        <Select value={assigneeId} onValueChange={setAssigneeId}>
+                                                            <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
+                                                                <SelectValue placeholder="Select an assignee" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {users.map((user) => (
+                                                                    <SelectItem key={user.id} value={user.id.toString()}>
+                                                                        {user.name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <InputError message={assigneeError} className="mt-1" />
                                                     </div>
-                                                    <InputError message={startedDateError} className="mt-1" />
-                                                </div>
-                                                <div>
-                                                    <label htmlFor="status" className="text-foreground text-sm font-medium">
-                                                        Status
-                                                    </label>
-                                                    <Select value={status} onValueChange={handleStatusChange}>
-                                                        <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
-                                                            <SelectValue placeholder="Select status" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="pending">Pending</SelectItem>
-                                                            <SelectItem value="on progress">On Progress</SelectItem>
-                                                            <SelectItem value="done">Done</SelectItem>
-                                                            <SelectItem value="overdue">Overdue</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <InputError message={statusError} className="mt-1" />
-                                                </div>
-                                                <div>
-                                                    <label className="text-foreground text-sm font-medium">File Attachment</label>
-                                                    {existingFile && !removeFile && !showUploadAnother && (
-                                                        <div className="mt-1 flex items-center gap-2">
-                                                            <a
-                                                                href={existingFile}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-600 hover:underline"
-                                                            >
-                                                                View Current File
-                                                            </a>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setShowUploadAnother(true)}
-                                                                className="text-green-600 border-green-600 hover:bg-600/90 hover:text-green-600"
-                                                            >
-                                                                <Upload className="h-4 w-4 mr-1" />
-                                                                Change File
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setRemoveFile(true)}
-                                                                className="text-red-600 border-red-600 hover:bg-red-50"
-                                                            >
-                                                                Remove File
-                                                            </Button>
+                                                    <div className="flex flex-col gap-2">
+                                                        <div>
+                                                            <label htmlFor="due-date" className="text-foreground text-sm font-medium">
+                                                                Due Date
+                                                            </label>
+                                                            <DatePicker
+                                                                id="due-date"
+                                                                value={dueDateTime?.toDate() || new Date()}
+                                                                onChange={handleDateChange}
+                                                                className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
+                                                                aria-labelledby="due-date-label"
+                                                            />
                                                         </div>
-                                                    )}
-                                                    {(showUploadAnother || !existingFile || removeFile) && (
-                                                        <FileUpload onFileSelect={handleFileSelect} className="mt-1 w-full" />
-                                                    )}
+                                                        <div>
+                                                            <label htmlFor="due-time" className="text-foreground text-sm font-medium">
+                                                                Due Time
+                                                            </label>
+                                                            <TimePicker
+                                                                id="due-time"
+                                                                value={dueDateTime?.toDate() || new Date()}
+                                                                onChange={handleTimeChange}
+                                                                className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
+                                                                aria-labelledby="due-date-label"
+                                                            />
+                                                        </div>
+                                                        <InputError message={dueDateTimeError} className="mt-1" />
+                                                    </div>
+                                                    <div className="flex flex-col gap-2">
+                                                        <div>
+                                                            <label htmlFor="started-date" className="text-foreground text-sm font-medium">
+                                                                Started Date
+                                                            </label>
+                                                            <DatePicker
+                                                                id="started-date"
+                                                                value={startedDate?.toDate() || new Date()}
+                                                                onChange={handleStartedDateChange}
+                                                                className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
+                                                                aria-labelledby="started-date-label"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label htmlFor="started-time" className="text-foreground text-sm font-medium">
+                                                                Started Time
+                                                            </label>
+                                                            <TimePicker
+                                                                id="started-time"
+                                                                value={startedDate?.toDate() || new Date()}
+                                                                onChange={handleStartedTimeChange}
+                                                                className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
+                                                                aria-labelledby="started-date-label"
+                                                            />
+                                                        </div>
+                                                        <InputError message={startedDateError} className="mt-1" />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="status" className="text-foreground text-sm font-medium">
+                                                            Status
+                                                        </label>
+                                                        <Select value={status} onValueChange={handleStatusChange}>
+                                                            <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
+                                                                <SelectValue placeholder="Select status" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="pending">Pending</SelectItem>
+                                                                <SelectItem value="on progress">On Progress</SelectItem>
+                                                                <SelectItem value="done">Done</SelectItem>
+                                                                <SelectItem value="overdue">Overdue</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <InputError message={statusError} className="mt-1" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-foreground text-sm font-medium">File Attachment</label>
+                                                        {existingFile && !removeFile && !showUploadAnother && (
+                                                            <div className="mt-1 flex items-center gap-2">
+                                                                <a
+                                                                    href={existingFile}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    View Current File
+                                                                </a>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => setShowUploadAnother(true)}
+                                                                    className="text-green-600 border-green-600 hover:bg-600/90 hover:text-green-600"
+                                                                >
+                                                                    <Upload className="h-4 w-4 mr-1" />
+                                                                    Change File
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => setRemoveFile(true)}
+                                                                    className="text-red-600 border-red-600 hover:bg-red-50"
+                                                                >
+                                                                    Remove File
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                        {(showUploadAnother || !existingFile || removeFile) && (
+                                                            <FileUpload onFileSelect={handleFileSelect} className="mt-1 w-full" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex justify-center">
+                                                        <Button className="h-10 w-full bg-blue-950 text-sm text-white hover:bg-blue-900" type="submit">
+                                                            {editingTaskId ? 'Update Task' : 'Send Task'}
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex justify-center">
-                                                    <Button className="h-10 w-full bg-blue-950 text-sm text-white hover:bg-blue-900" type="submit">
-                                                        {editingTaskId ? 'Update Task' : 'Send Task'}
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
+                                            </form>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+                            )}
                             <div className="flex items-center gap-2">
                                 <div className="relative">
                                     <Input
@@ -597,50 +601,65 @@ export default function Assignee() {
                         </div>
                     </div>
                     <div className="flex-1">
-                        <TasksTable
-                            tasks={tasksWithAssigneeName}
-                            handleEdit={handleEdit}
-                            handleDelete={handleDelete}
-                            onPageChange={handlePageChange}
-                            pagination={{
-                                current_page: initialTasks.current_page,
-                                last_page: initialTasks.last_page,
-                                per_page: initialTasks.per_page,
-                                total: initialTasks.total,
-                            }}
-                        />
+                        {isAdmin ? (
+                            <TasksTable
+                                tasks={tasksWithAssigneeName}
+                                handleEdit={handleEdit}
+                                handleDelete={handleDelete}
+                                onPageChange={handlePageChange}
+                                pagination={{
+                                    current_page: initialTasks.current_page,
+                                    last_page: initialTasks.last_page,
+                                    per_page: initialTasks.per_page,
+                                    total: initialTasks.total,
+                                }}
+                            />
+                        ) : (
+                            <UserTasksTable
+                                tasks={tasksWithAssigneeName}
+                                onPageChange={handlePageChange}
+                                pagination={{
+                                    current_page: initialTasks.current_page,
+                                    last_page: initialTasks.last_page,
+                                    per_page: initialTasks.per_page,
+                                    total: initialTasks.total,
+                                }}
+                            />
+                        )}
                     </div>
-                    <Dialog
-                        open={isDeleteDialogOpen}
-                        onOpenChange={(open) => {
-                            setIsDeleteDialogOpen(open);
-                            if (!open) {
-                                setDeletingTaskId(null);
-                            }
-                        }}
-                    >
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Confirmation Deletion</DialogTitle>
-                                <DialogDescription>Are you sure you want to delete this task?</DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <Button
-                                    variant="outline"
-                                    className="hover:bg-accent border-red-600 text-red-600 hover:text-red-600/90"
-                                    onClick={() => {
-                                        setIsDeleteDialogOpen(false);
-                                        setDeletingTaskId(null);
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button onClick={confirmDelete} variant="destructive">
-                                    Delete
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    {isAdmin && (
+                        <Dialog
+                            open={isDeleteDialogOpen}
+                            onOpenChange={(open) => {
+                                setIsDeleteDialogOpen(open);
+                                if (!open) {
+                                    setDeletingTaskId(null);
+                                }
+                            }}
+                        >
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Confirmation Deletion</DialogTitle>
+                                    <DialogDescription>Are you sure you want to delete this task?</DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                    <Button
+                                        variant="outline"
+                                        className="hover:bg-accent border-red-600 text-red-600 hover:text-red-600/90"
+                                        onClick={() => {
+                                            setIsDeleteDialogOpen(false);
+                                            setDeletingTaskId(null);
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={confirmDelete} variant="destructive">
+                                        Delete
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
                 </div>
             </AppLayout>
         </ErrorBoundary>
