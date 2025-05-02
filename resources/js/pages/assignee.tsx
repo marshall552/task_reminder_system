@@ -562,7 +562,7 @@ export default function Assignee() {
                                 <div className="relative">
                                     <Input
                                         type="text"
-                                        placeholder="Search by title or description"
+                                        placeholder="Search by title"
                                         className="pr-2 pl-8 w-full"
                                         value={searchTerm}
                                         onChange={(e) => handleSearchChange(e.target.value)}
