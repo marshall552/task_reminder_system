@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { FilePenLine, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Task } from '@/types';
 
 // Enable timezone support in dayjs
@@ -21,15 +21,13 @@ interface Pagination {
   total: number;
 }
 
-interface TasksTableProps {
+interface UserTasksTableProps {
   tasks: TaskWithAssignee[];
-  handleEdit: (task: Task) => void;
-  handleDelete: (id: number) => void;
   onPageChange?: (page: number) => void;
   pagination?: Pagination;
 }
 
-export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChange, pagination }: TasksTableProps) {
+export default function UserTasksTable({ tasks, onPageChange, pagination }: UserTasksTableProps) {
   const formatDateTime = (dateTime: string) => {
     return dayjs(dateTime).tz(dayjs.tz.guess()).format('MMM D, YYYY, h:mm A');
   };
@@ -46,23 +44,9 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
         {/* Header Row */}
         <div className="flex px-4 py-3 font-medium text-sm uppercase text-foreground bg-chart-2/20 min-h-[48px] w-full">
           <div className="flex-1 pl-4 min-w-[200px] flex items-center">Task</div>
-          <div className="flex-1 pl-10 min-w-[180px] flex items-center leading-none">Started Date</div>
-          <div className="flex-1 pl-8 pr-2 min-w-[180px] flex items-center leading-none">Due Date</div>
-          <div className="flex-1 pl-5 pr-6 min-w-[120px] flex items-center leading-none">
-            <div
-              className="truncate max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap"
-              style={{
-                maxWidth: '120px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Assignee
-            </div>
-          </div>
-          <div className="flex-1 pl-4 pr-4 min-w-[120px] flex items-center">Task Status</div>
-          <div className="w-28 min-w-[112px] pl-6 pr-4 flex items-center leading-none">Actions</div>
+          <div className="flex-1 pl-4 min-w-[250px] flex items-center">Description</div>
+          <div className="flex-1 pl-4 min-w-[120px] flex items-center">Status</div>
+          <div className="flex-1 pl-4 min-w-[180px] flex items-center">Due Date</div>
         </div>
         {/* Task Rows */}
         {tasks.length === 0 ? (
@@ -91,24 +75,18 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
                   {task.title.trim().replace(/\u00A0/g, ' ')}
                 </div>
               </div>
-              <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[180px] flex items-center">
-                {formatDateTime(task.started_date_time)}
-              </div>
-              <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[180px] flex items-center">
-                {formatDateTime(task.due_date_time)}
-              </div>
-              <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[120px] flex items-center">
+              <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[250px] flex items-center">
                 <div
-                  className="truncate max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap"
+                  className="truncate max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap"
                   style={{
-                    maxWidth: '120px',
+                    maxWidth: '250px',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}
-                  title={task.assignee !== 'Unknown' ? task.assignee || 'None' : `User ${task.assignee_id}` || 'None'}
+                  title={task.description}
                 >
-                  {task.assignee !== 'Unknown' ? task.assignee || 'None' : `User ${task.assignee_id}` || 'None'}
+                  {task.description}
                 </div>
               </div>
               <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[120px] flex items-center">
@@ -126,23 +104,8 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
                   {task.status}
                 </span>
               </div>
-              <div className="w-28 min-w-[112px] pl-4 pr-4 flex items-center justify-start gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEdit(task)}
-                  className="hover:bg-transparent p-0 h-auto"
-                >
-                  <FilePenLine className="h-4 w-4 text-chart-2" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(task.id)}
-                  className="hover:bg-transparent p-0 h-auto"
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+              <div className="flex-1 pl-4 pr-4 text-sm text-foreground min-w-[180px] flex items-center">
+                {formatDateTime(task.due_date_time)}
               </div>
             </div>
           ))

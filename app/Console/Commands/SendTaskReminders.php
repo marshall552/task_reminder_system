@@ -112,6 +112,7 @@
 //     }
 // }
 
+
 namespace App\Console\Commands;
 
 use App\Models\Task;
@@ -142,21 +143,24 @@ class SendTaskReminders extends Command
             if ($assignee) {
                 // Notification for the assignee
                 Notification::create([
-                    'user_id' => null,
+                    'user_id' => null, // System notification from "Tasko"
                     'recipient_id' => $assignee->id,
-                    'message' => "Urgent: Task '{$task->title}' is overdue since {$task->due_date_time->format('Y-m-d H:i')}. Please update its status.",
+                    'message' => "Tasko: Task '{$task->title}' is overdue since {$task->due_date_time->format('Y-m-d H:i')}. Please update its status.",
                     'is_read' => false,
                 ]);
 
                 // Notify admins
                 $admins = User::where('role', 'admin')->get();
                 foreach ($admins as $admin) {
-                    Notification::create([
-                        'user_id' => null,
-                        'recipient_id' => $admin->id,
-                        'message' => "Task: '{$task->title}' assigned to {$assignee->name} is overdue since {$task->due_date_time->format('Y-m-d H:i')}.",
-                        'is_read' => false,
-                    ]);
+                    // Skip if the admin is the assignee
+                    if ($admin->id !== $assignee->id) {
+                        Notification::create([
+                            'user_id' => null, // System notification from "Tasko"
+                            'recipient_id' => $admin->id,
+                            'message' => "Tasko: Task '{$task->title}' assigned to {$assignee->name} is overdue since {$task->due_date_time->format('Y-m-d H:i')}.",
+                            'is_read' => false,
+                        ]);
+                    }
                 }
             }
         }

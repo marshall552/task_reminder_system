@@ -213,23 +213,23 @@
 //                         <Check className="mr-1 h-4 w-4" /> Mark as All Read
 //                     </Button>
 //                 </div>
+                {/* Notification List */}
+                <div className="flex-1">
+                    <div className="divide-y divide-gray-200">
+                        {notifications.length > 0 ? (
+                            notifications.map((notification, index) => (
+                                <Dialog key={notification.id}>
+                                    <DialogTrigger asChild>
+                                        <div
+                                            className={`flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-gray-200  ${
+                                                index % 2 === 0 ? 'bg-white' : 'bg-chart-2/10'
+                                            }`}
+                                            onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                                        >
+                                            <div className="flex w-full items-center gap-3">
+                                                {/* Unread Indicator */}
+                                                {notification.read === false && <span className="h-2 w-2 rounded-full bg-blue-500" />}
 
-//                 {/* Notification List */}
-//                 <div className="flex-1">
-//                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-//                         {notifications.length > 0 ? (
-//                             notifications.map((notification, index) => (
-//                                 <Dialog key={notification.id}>
-//                                     <DialogTrigger asChild>
-//                                         <div
-//                                             className={`flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 ${
-//                                                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-//                                             }`}
-//                                             onClick={() => !notification.read && handleMarkAsRead(notification.id)}
-//                                         >
-//                                             <div className="flex w-full items-center gap-3">
-//                                                 {/* Unread Indicator */}
-//                                                 {notification.read === false && <span className="h-2 w-2 rounded-full bg-blue-500" />}
 
 //                                                 {/* User Info and Message */}
 //                                                 <div className="flex flex-1 items-center gap-10">
